@@ -74,14 +74,21 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 		if (!ValidatePlayer(client))
 			return;
 
+		buttons &= ~IN_USE;
+
 		// Lets grab the entity
-		new ent = GetClientAimTarget(client, false);
+		new ent = TraceClientViewEntity(client);
 
 		if (ent == -1)
 			return;
 
-		if (IsValidClassname(ent,"item_healthvial"))
+		new String:name[32];
+		GetEdictClassname(ent, name, sizeof(name));
+
+		if (IsValidClassname(ent, "item_healthvial"))
 		{
+			buttons = IN_USE;
+
 			new clienthp = GetClientHealth(client);
 			if (clienthp < 100)
 			{
@@ -91,7 +98,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 				if (ClientGotInfo[client])
 					return;
 
-				// They got the info, don't spawm it
+				// They got the info, don't spam it
 				ClientGotInfo[client] = true;
 
 				if (GetConVarInt(cvar_curetype) == 1)
@@ -109,6 +116,9 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 				CreateTimer(3.0, ReEnableInfo, client);
 			}
 		}
+
+		if (!StrEqual(name, "worldspawn"))
+			buttons = IN_USE;
 	}
 }
 
@@ -155,4 +165,34 @@ static bool:IsValidClassname(entity, String:classname[]) {
     decl String:iClassname[MAX_NAME_LENGTH];
     GetEdictClassname(entity, iClassname, sizeof(iClassname));
     return bool:StrEqual(iClassname, classname, false);
-}  
+}
+
+/*
+	TraceClientViewEntity()
+*/
+stock TraceClientViewEntity(client)
+{
+	new Float:Origin[3],
+		Float:Rotation[3];
+	GetClientEyePosition(client, Origin);
+	GetClientEyeAngles(client, Rotation);
+	new	Handle:tr = TR_TraceRayFilterEx(Origin, Rotation, MASK_VISIBLE, RayType_Infinite, TRDontHitSelf, client);
+	new	pEntity	= -1;
+	if (TR_DidHit(tr))
+	{
+		pEntity = TR_GetEntityIndex(tr);
+		CloseHandle(tr);
+		return pEntity;
+	}
+	CloseHandle(tr);
+	return -1;
+}
+
+/*
+	bool:TRDontHitSelf()
+*/
+public bool:TRDontHitSelf(entity, mask, any:data)
+{
+	if (entity == data) return false;
+	return true;
+}
