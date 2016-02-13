@@ -1,5 +1,5 @@
 /**
- * Gets the owner of the entity
+ * Returns whether or not a survivor is infected.
  */
 stock GetInfection(client)
 {
@@ -7,13 +7,17 @@ stock GetInfection(client)
 }
 
 /**
- * Sets the owner of the entity
+ * Toggles survivors infection
  */
 stock SetInfection(client, value)
 {
-	// If the value is more than 1, send a warning
-	if (value > 1)
-		ThrowError("The value can't be more than 1!");
-
-	SetEntProp(client, Prop_Send, "m_IsInfected", value);
+	if(value == 1)
+	{
+		SetEntPropFloat(client,Prop_Data,"m_tbiPrev",GetGameTime() + 60.0);
+		SetEntProp(client,Prop_Send,"m_IsInfected",1);
+	}
+	else if(value == 0)
+	{
+		SetEntProp(client,Prop_Send,"m_IsInfected",0);
+	}
 }
