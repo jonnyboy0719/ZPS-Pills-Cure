@@ -17,7 +17,7 @@ void PluginInit()
 HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey )
 {
 	// If it's not item_healthvial
-	if ( Utils.StrEql( skey, "item_healthvial" ) )
+	if ( !Utils.StrEql( skey, "item_healthvial" ) )
 		return HOOK_HANDLED;
 	
 	if ( !pPlayer.IsPracticallyZombie() )
