@@ -14,30 +14,26 @@ void PluginInit()
 	Events::Player::OnEntityPickedUp.Hook( @PlayerPickupEntity );
 }
 
-HookReturnCode PlayerPickupEntity( CBasePlayer@ pPlayer, const string& in skey )
+HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey )
 {
-	// If the player doesn't exist
-	if ( pPlayer is null )
-		return HOOK_HANDLED;
-	
 	// If it's not item_healthvial
 	if ( Utils.StrEql( skey, "item_healthvial" ) )
+		return HOOK_HANDLED;
+	
+	if ( !pPlayer.IsPracticallyZombie() )
 		return HOOK_HANDLED;
 	
 	// Remove infection
 	pPlayer.UnInfectPlayer();
 	
-	if ( pPlayer.IsPracticallyZombie() )
-	{
-		if ( CureSettings_Instant )
-			Engine.Print( chat, pPlayer, "[Cure] You have been \0x006400cured\x01 from the infection.\n" );
-		else
-			Engine.Print( chat, pPlayer, "[Cure] Your infection is gone, \0x8B0000for now\x01...\n" );
-	}
-	
 	// If we are just going to do instant cure, skip the rest
 	if ( CureSettings_Instant )
+	{
+		Engine.PrintC( chat, pPlayer, "[\x073EFF3ECure\x01] You have been \x073EFF3Ecured\x01 from the infection.\n" );
 		return HOOK_HANDLED;
+	}
+	else
+		Engine.PrintC( chat, pPlayer, "[\x073EFF3ECure\x01] Your infection is gone, \x078B0000for now\x01...\n" );
 	
 	// Redo infection!
 	pPlayer.InfectPlayer( CureSettings_InfectionDelay );
