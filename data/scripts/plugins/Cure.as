@@ -22,7 +22,7 @@ void PluginInit()
 		Cvar::Create( "cure_infectiondelay", "65.0", FLAG_RCON );
 	
 	if ( !Cvar::Exist( "cure_percentage" ) )
-		Cvar::Create( "cure_percentage", "30", FLAG_RCON );
+		Cvar::Create( "cure_percentage", "35", FLAG_RCON );
 	
 	InitColors();
 }
@@ -81,10 +81,11 @@ HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey
 			return HOOK_HANDLED;
 		}
 		else
+		{
 			Engine.PrintC( chat, pPlayer, FormatToString( "[{GREEN}Cure{DEFAULT}] Your infection is gone, {RED}for now{DEFAULT}...\n" ) );
-		
-		// Redo infection!
-		pPlayer.InfectPlayer( Cvar::GrabFloat( "cure_infectiondelay" ) );
+			// Redo infection!
+			pPlayer.InfectPlayer( Cvar::GrabFloat( "cure_infectiondelay" ) );
+		}
 	}
 	return HOOK_CONTINUE;
 }
