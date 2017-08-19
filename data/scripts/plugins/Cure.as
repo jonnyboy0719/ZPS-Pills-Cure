@@ -2,16 +2,62 @@
 	Plugin Created by Johan "JonnyBoy0719" Ehrendahl
 */
 
-// If set to delay, how many seconds should we wait until we re-infect em?
-float CureSettings_InfectionDelay = 65.0f;
+// Requires colors plugin addon, which is located on the ZP Community Forums, under Custom Content > Plugins:
+// URL: https://zombiepanicsource.com/forums/showthread.php?tid=30
+// Author: Johan "JonnyBoy0719" Ehrendahl
 
-// If we should have instant cure, or just delay infection
-bool CureSettings_Instant = false;
+#include "colors"
 
 void PluginInit()
 {
 	// Hooks
 	Events::Player::OnEntityPickedUp.Hook( @PlayerPickupEntity );
+	Events::Player::OnCommandExecute.Hook( @OnCommandExecuted );
+	
+	// Cvars
+	if ( !Cvar::Exist( "cure_instant" ) )
+		Cvar::Create( "cure_instant", "0", FLAG_RCON );
+	
+	if ( !Cvar::Exist( "cure_infectiondelay" ) )
+		Cvar::Create( "cure_infectiondelay", "65.0", FLAG_RCON );
+	
+	if ( !Cvar::Exist( "cure_percentage" ) )
+		Cvar::Create( "cure_percentage", "30", FLAG_RCON );
+	
+	InitColors();
+}
+
+HookReturnCode OnCommandExecuted( CBasePlayer@ pPlayer, const string& in strCommand, const string& in strValue, ADMIN_FLAGS& in flags )
+{
+	if ( Utils.StrEql( strCommand, "cure_instant" ) )
+	{
+		if ( Utils.StrEql( strValue, "" ) )
+		{
+			string result = Cvar::GrabBool( strCommand ) ? "true" : "false";
+			Engine.Print( console, pPlayer, "cure_instant: " + result + "\n" );
+			return HOOK_CONTINUE;
+		}
+	}
+	else if ( Utils.StrEql( strCommand, "cure_infectiondelay" ) )
+	{
+		if ( Utils.StrEql( strValue, "" ) )
+		{
+			Engine.Print( console, pPlayer, "cure_infectiondelay: " + Cvar::GrabFloat( strCommand ) + "\n" );
+			return HOOK_CONTINUE;
+		}
+	}
+	else if ( Utils.StrEql( strCommand, "cure_percentage" ) )
+	{
+		if ( Utils.StrEql( strValue, "" ) )
+		{
+			Engine.Print( console, pPlayer, "cure_percentage: " + Cvar::GrabInt( strCommand ) + "\n" );
+			return HOOK_CONTINUE;
+		}
+	}
+	
+	Cvar::Set( strCommand, strValue );
+	
+	return HOOK_CONTINUE;
 }
 
 HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey )
@@ -23,20 +69,22 @@ HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey
 	if ( !pPlayer.IsPracticallyZombie() )
 		return HOOK_HANDLED;
 	
-	// Remove infection
-	pPlayer.UnInfectPlayer();
-	
-	// If we are just going to do instant cure, skip the rest
-	if ( CureSettings_Instant )
+	if ( Math::RandomInt(1, 100) <= Cvar::GrabInt( "cure_percentage" ) )
 	{
-		Engine.PrintC( chat, pPlayer, "[\x073EFF3ECure\x01] You have been \x073EFF3Ecured\x01 from the infection.\n" );
-		return HOOK_HANDLED;
+		// Remove infection
+		pPlayer.UnInfectPlayer();
+		
+		// If we are just going to do instant cure, skip the rest
+		if ( Cvar::GrabBool( "cure_instant" ) )
+		{
+			Engine.PrintC( chat, pPlayer, FormatToString( "[{GREEN}Cure{DEFAULT}] You have been {GREEN}cured{DEFAULT} from the infection.\n" ) );
+			return HOOK_HANDLED;
+		}
+		else
+			Engine.PrintC( chat, pPlayer, FormatToString( "[{GREEN}Cure{DEFAULT}] Your infection is gone, {RED}for now{DEFAULT}...\n" ) );
+		
+		// Redo infection!
+		pPlayer.InfectPlayer( Cvar::GrabFloat( "cure_infectiondelay" ) );
 	}
-	else
-		Engine.PrintC( chat, pPlayer, "[\x073EFF3ECure\x01] Your infection is gone, \x078B0000for now\x01...\n" );
-	
-	// Redo infection!
-	pPlayer.InfectPlayer( CureSettings_InfectionDelay );
-	
 	return HOOK_CONTINUE;
 }
