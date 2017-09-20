@@ -66,7 +66,7 @@ HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey
 	if ( !Utils.StrEql( skey, "item_healthvial" ) )
 		return HOOK_HANDLED;
 	
-	if ( !pPlayer.IsPracticallyZombie() )
+	if ( !pPlayer.IsInfected() )
 		return HOOK_HANDLED;
 	
 	if ( Math::RandomInt(1, 100) <= Cvar::GrabInt( "cure_percentage" ) )
