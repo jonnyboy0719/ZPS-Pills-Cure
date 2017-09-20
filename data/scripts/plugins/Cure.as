@@ -57,8 +57,6 @@ HookReturnCode OnCommandExecuted( CBasePlayer@ pPlayer, const string& in strComm
 		}
 	}
 	
-	Cvar::Set( strCommand, strValue );
-	
 	return HOOK_CONTINUE;
 }
 
