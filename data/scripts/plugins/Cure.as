@@ -24,11 +24,9 @@ void PluginInit()
 	if ( !Cvar::Exist( "cure_percentage" ) )
 		Cvar::Create( "cure_percentage", "30", FLAG_RCON );
 	
-	InitColors();
-	
 	PluginData.SetName( "Pills Cure Extended" );
 	PluginData.SetAuthor( "JonnyBoy0719" );
-	PluginData.SetVersion( "2.0.0" );
+	PluginData.SetVersion( "2.0.1" );
 }
 
 HookReturnCode OnCommandExecuted( CBasePlayer@ pPlayer, const string& in strCommand, const string& in strValue, ADMIN_FLAGS& in flags )
@@ -81,11 +79,11 @@ HookReturnCode PlayerPickupEntity( CHL2MP_Player@ pPlayer, const string& in skey
 		// If we are just going to do instant cure, skip the rest
 		if ( Cvar::GrabBool( "cure_instant" ) )
 		{
-			Engine.PrintC( chat, pPlayer, FormatToString( "[{GREEN}Cure{DEFAULT}] You have been {GREEN}cured{DEFAULT} from the infection.\n" ) );
+			g_Colors.Print2Chat( pPlayer, "[{GREEN}Cure{DEFAULT}] You have been {GREEN}cured{DEFAULT} from the infection.\n" );
 			return HOOK_HANDLED;
 		}
 		else
-			Engine.PrintC( chat, pPlayer, FormatToString( "[{GREEN}Cure{DEFAULT}] Your infection is gone, {RED}for now{DEFAULT}...\n" ) );
+			g_Colors.Print2Chat( pPlayer, "[{GREEN}Cure{DEFAULT}] Your infection is gone, {RED}for now{DEFAULT}...\n" );
 		
 		// Redo infection!
 		pPlayer.InfectPlayer( Cvar::GrabFloat( "cure_infectiondelay" ) );
